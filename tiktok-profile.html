@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@moncompte · TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #000000;
+    --card: #a7a7a7;
+    --border: rgba(255,255,255,0.08);
+    --text: #000000;
+    --muted: #888;
+    --accent: #db264d;
+    --accent2: #a317b9;
+    --font-title: 'Syne', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-title);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ========== NAV ========== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(248, 246, 246, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+  }
+  .nav-logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    cursor: pointer;
+  }
+  .nav-icons { display: flex; gap: 20px; align-items: center; }
+  .nav-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.5s;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .nav-icon:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ========== PAGES ========== */
+  .page { display: none; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ========== PROFILE PAGE ========== */
+  .profile-header {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 0;
+  }
+  .profile-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #ff9a3c, var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -2px;
+    position: relative;
+    z-index: 1;
+  }
+  .avatar-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    z-index: 0;
+    animation: spin 4s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .avatar-ring::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--bg);
+  }
+
+  .profile-info { flex: 1; }
+  .profile-handle {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 2px;
+  }
+  .profile-name {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 12px;
+  }
+  .follow-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 28px;
+    font-family: var(--font-title);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .follow-btn:hover { opacity: 0.88; }
+  .follow-btn:active { transform: scale(0.97); }
+
+  .stats {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 16px;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: 18px;
+    font-weight: 800;
+    display: block;
+    letter-spacing: -0.5px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .bio {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 6px;
+    max-width: 420px;
+  }
+  .bio-link {
+    font-size: 13px;
+    color: var(--accent2);
+    font-family: var(--font-mono);
+    cursor: pointer;
+  }
+
+  /* ========== TABS ========== */
+  .tabs {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-top: 20px;
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 12px 24px 11px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab:hover { color: var(--text); }
+
+  /* ========== GRID ========== */
+  .grid-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 4px 20px 60px;
+  }
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .video-card {
+    position: relative;
+    aspect-ratio: 9/16;
+    background: var(--card);
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 0;
+    transition: transform 0.2s;
+  }
+  .video-card:hover { transform: scale(0.97); z-index: 2; }
+  .video-card:hover .card-overlay { opacity: 1; }
+
+  .card-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-bg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 800;
+  }
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .card-play {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-play::after {
+    content: '';
+    border-left: 14px solid white;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    margin-left: 3px;
+  }
+  .card-views {
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    font-family: var(--font-mono);
+  }
+
+  .card-views-bottom {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    font-family: var(--font-mono);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  .card-views-bottom::before { content: '▶'; font-size: 9px; }
+
+  .card-pinned {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: var(--accent);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+  }
+
+  /* ========== ARTICLE PAGE ========== */
+  #article-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  .article-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    transition: color 0.2s;
+    width: fit-content;
+  }
+  .article-back:hover { color: var(--text); }
+  .article-back::before {
+    content: '←';
+    font-size: 16px;
+  }
+
+  .article-video-frame {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 9/16;
+    margin: 0 auto 32px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    display: block;
+  }
+  .article-video-frame .card-bg {
+    border-radius: 0;
+    font-size: 56px;
+  }
+  .video-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    padding: 40px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: white;
+    width: 38%;
+    border-radius: 2px;
+  }
+  .video-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .vid-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .vid-btn:hover { background: rgba(255,255,255,0.3); }
+  .vid-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .article-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent2);
+    background: rgba(37,244,238,0.08);
+    border: 1px solid rgba(37,244,238,0.2);
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+  }
+
+  .article-title {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+  .meta-text { flex: 1; }
+  .meta-author {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .meta-date {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .meta-stats {
+    display: flex;
+    gap: 12px;
+  }
+  .meta-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .article-body {
+    font-size: 15px;
+    line-height: 1.75;
+    color: rgba(0, 0, 0, 0.88);
+  }
+  .article-body p { margin-bottom: 18px; }
+  .article-body h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 28px 0 12px;
+    letter-spacing: -0.4px;
+  }
+  .article-body strong { color: var(--text); font-weight: 700; }
+  .article-body .highlight {
+    background: rgba(254,44,85,0.12);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 20px 0;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .share-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .share-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(#f6f4f3);
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    text-align: center;
+  }
+  .share-btn:hover { border-color: var(--accent); background: rgba(254,44,85,0.08); }
+  .share-btn.primary { background: var(--accent); border-color: var(--accent); }
+  .share-btn.primary:hover { opacity: 0.88; }
+
+  /* ========== GRADIENTS for cards ========== */
+  .grad-1 { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460, #533483); }
+  .grad-2 { background: linear-gradient(135deg, #2d1b69, #11998e, #38ef7d); }
+  .grad-3 { background: linear-gradient(135deg, #c94b4b, #4b134f); }
+  .grad-4 { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
+  .grad-5 { background: linear-gradient(135deg, #1a1a1a, #2d2d2d, #3d3d3d); }
+  .grad-6 { background: linear-gradient(135deg, #134e5e, #71b280); }
+  .grad-7 { background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b); }
+  .grad-8 { background: linear-gradient(135deg, #232526, #414345); }
+  .grad-9 { background: linear-gradient(135deg, #0d0d0d, #1a0a2e, #2d0a4e); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="goHome()">TikTok</div>
+  <div class="nav-icons">
+    <div class="nav-icon">🔍</div>
+    <div class="nav-icon">📬</div>
+    <div class="nav-icon">👤</div>
+  </div>
+</nav>
+
+<!-- ===== PROFILE PAGE ===== -->
+<div id="profile-page" class="page active">
+  <div class="profile-header">
+    <div class="profile-top">
+      <div class="avatar-wrap">
+        <div class="avatar-ring"></div>
+        <div class="avatar" style="position:relative;z-index:1;"> </div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-handle">@What_is_a_trend?</div>
+        <div class="profile-name">Julien ARSENA · Miyu GOTO · Naïs Noël · Assya </div>
+        <button class="follow-btn">Follow</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-num">123</span><span class="stat-label">following</span></div>
+      <div class="stat"><span class="stat-num">6,7k</span><span class="stat-label">followers</span></div>
+      <div class="stat"><span class="stat-num">911k</span><span class="stat-label">likes</span></div>
+    </div>
+    <p class="bio">✍️ Trends...</p>
+    <div class="bio-link">🔗 </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Vidéos</div>
+    <div class="tab">Favoris</div>
+    <div class="tab">Aimés</div>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="video-grid" id="video-grid"></div>
+  </div>
+</div>
+
+<!-- ===== ARTICLE PAGE ===== -->
+<div id="article-page" class="page">
+  <div class="article-back" onclick="goHome()">Retour au profil</div>
+  <div id="article-content"></div>
+</div>
+
+<script>
+const videos = [
+  {
+    id: 1,
+    emoji: "🤖",
+    image : '',
+    grad: "grad-1",
+    views: "2,1M",
+    pinned: true,
+    tags: ["#IA", "#Tech", "#Futur"],
+    title: "L'IA va-t-elle vraiment remplacer nos emplois ? La réalité derrière le mythe",
+    date: "14 mars 2025",
+    readTime: "8 min",
+    likes: "47k",
+    comments: "1,2k",
+    body: `<p>Depuis l'émergence de ChatGPT et des modèles de langage avancés, une question revient en boucle dans les médias et les conversations de bureau : <strong>nos emplois sont-ils en danger ?</strong> La réalse est bien plus nuancée que ce que les gros titres veulent bien nous faire croire.</p>
+    <h2>Ce que les chiffres disent vraiment</h2>
+    <p>Les études se contredisent. Le rapport McKinsey de 2023 estimait que 30% des tâches de travail pourraient être automatisées d'ici 2030. Pourtant, le Bureau of Labor Statistics américain montre que les secteurs les plus exposés à l'IA ont connu... une <strong>augmentation nette de l'emploi</strong> ces cinq dernières années.</p>
+    <div class="highlight">« L'automatisation n'a jamais détruit le travail dans l'ensemble — elle l'a transformé. La question n'est pas si vous aurez un emploi, mais quel emploi. »</div>
+    <p>Les comptables pensaient être remplacés par les tableurs. Les chauffeurs de taxi par les GPS. Les graphistes par Photoshop. Chaque fois, la technologie a amplifié leurs capacités plutôt que de les effacer.</p>
+    <h2>Les vrais perdants et gagnants</h2>
+    <p>Ce qui est certain : les métiers routiniers et répétitifs — saisie de données, traduction basique, service client de niveau 1 — vont massivement se réduire. Mais des centaines de nouveaux métiers émergent : <strong>prompt engineers, superviseurs d'IA, auditeurs algorithmiques</strong>.</p>
+    <p>La vraie fracture ne sera pas entre humains et machines, mais entre ceux qui savent utiliser ces outils et ceux qui les ignorent. La question à se poser n'est plus "est-ce que l'IA va me remplacer ?" mais "est-ce que je vais apprendre à travailler avec elle ?"</p>`
+  },
+  {
+    id: 2,
+    emoji: "🌍",
+    image : '',
+    grad: "grad-2",
+    views: "890k",
+    pinned: false,
+    tags: ["#Climat", "#Science"],
+    title: "Pourquoi le rapport du GIEC 2024 est plus alarmant qu'il n'y paraît",
+    date: "2 avril 2025",
+    readTime: "6 min",
+    likes: "23k",
+    comments: "654",
+    body: `<p>Le dernier rapport du GIEC est sorti dans une quasi-indifférence médiatique. Pourtant, ses conclusions devraient faire la une de tous les journaux. Voici ce que vous devez savoir.</p>
+    <h2>Le point de non-retour est plus proche que prévu</h2>
+    <p>Le rapport confirme que nous avons dépassé <strong>1,2°C de réchauffement</strong> moyen global. Ce chiffre semble abstrait, mais il implique des effets en cascade : fonte accélérée des glaces, perturbation des courants marins, intensification des événements extrêmes.</p>
+    <div class="highlight">« Chaque dixième de degré supplémentaire n'est pas une progression linéaire — c'est une amplification exponentielle des risques. »</div>
+    <p>Ce qui est nouveau dans ce rapport : les scientifiques documentent pour la première fois des <strong>points de basculement irréversibles</strong> déjà franchis dans certains écosystèmes.</p>
+    <h2>Les solutions existent — mais le temps presse</h2>
+    <p>Le rapport n'est pas apocalyptique. Il décrit aussi des scénarios positifs, à condition d'agir dans la prochaine décennie. Les énergies renouvelables sont désormais économiquement compétitives dans 80% du monde. La reforestation massive reste possible. Les changements de comportement alimentaire peuvent réduire les émissions de 20%.</p>
+    <p>La bonne nouvelle est que les solutions techniques existent. Le problème est politique, économique, culturel. C'est une question de volonté collective.</p>`
+  },
+  {
+    id: 3,
+    emoji: "💸",
+    image : '',
+    grad: "grad-3",
+    views: "3,7M",
+    pinned: false,
+    tags: ["#Finance", "#Crypto"],
+    title: "Bitcoin à 100k$ : ce que personne n'ose dire sur la bulle spéculative",
+    date: "18 février 2025",
+    readTime: "10 min",
+    likes: "89k",
+    comments: "3,4k",
+    body: `<p>Bitcoin a franchi la barre symbolique des 100 000 dollars. Les médias s'emballent, les influenceurs crient victoire. Mais derrière les chiffres vertigineux se cache une réalité que très peu osent analyser lucidement.</p>
+    <h2>L'adoption institutionnelle : une arme à double tranchant</h2>
+    <p>Ce qui a propulsé Bitcoin à ces sommets n'est pas l'adoption "populaire" promise depuis des années, mais l'entrée massive des <strong>fonds institutionnels</strong> — BlackRock, Fidelity, les fonds souverains. C'est paradoxalement exactement ce que les crypto-puristes voulaient éviter.</p>
+    <div class="highlight">« Quand les grandes banques contrôlent 40% de l'offre d'un actif censé être décentralisé, on est en droit de se demander ce qu'il reste de la révolution initiale. »</div>
+    <p>Ces institutionnels ont des horizons d'investissement et des impératifs de liquidité très différents du "HODLer" classique. Leur entrée stabilise les prix à court terme mais crée des risques systémiques à long terme.</p>
+    <h2>Ni tout blanc, ni tout noir</h2>
+    <p>La technologie blockchain reste une innovation réelle avec des cas d'usage légitimes. Les transferts internationaux, la désintermédiation financière dans les pays à monnaie instable, les smart contracts — tout cela a de la valeur.</p>
+    <p>Mais spéculer sur Bitcoin en pensant que sa valeur est soutenue par ces usages réels, c'est se méprendre sur ce qui fait monter le prix. Ce qui fait monter Bitcoin, c'est l'anticipation que d'autres l'achèteront plus cher. C'est la définition d'une spéculation — pas nécessairement d'une bulle, mais d'un actif dont la valeur dépend fondamentalement de la psychologie collective.</p>`
+  },
+  {
+    id: 4,
+    emoji: "🧠",
+    image : '',
+    grad: "grad-4",
+    views: "1,2M",
+    pinned: false,
+    tags: ["#Psycho", "#Social"],
+    title: "Comment les réseaux sociaux ont reprogrammé notre cerveau en 10 ans",
+    date: "5 mai 2025",
+    readTime: "7 min",
+    likes: "34k",
+    comments: "987",
+    body: `<p>En dix ans, nous avons tous participé sans le savoir à la plus grande expérience de neurosciences de l'histoire humaine. Les plateformes sociales ont modifié en profondeur notre façon de traiter l'information, de maintenir l'attention, et même de ressentir les émotions.</p>
+    <h2>L'économie de l'attention, expliquée simplement</h2>
+    <p>Chaque notification, chaque like, chaque scroll déclenche une micro-sécrétion de <strong>dopamine</strong>. Ce n'est pas un hasard : des centaines d'ingénieurs ont conçu ces systèmes pour maximiser ces réponses neurochimiques. Le design de ces plateformes est délibérément addictif.</p>
+    <div class="highlight">« Nos téléphones sont des machines à dopamine sophistiquées que nous portons en permanence. La question n'est pas d'arrêter d'en utiliser, mais de comprendre leur effet. »</div>
+    <p>Les études montrent une corrélation entre l'utilisation intensive des réseaux sociaux et la <strong>réduction de la capacité d'attention soutenue</strong> — ce qu'on appelle le "brain rot" dans le langage populaire. Notre cerveau s'adapte à traiter des informations fragmentées et rapides, au détriment de la pensée profonde.</p>
+    <h2>Peut-on désintoxiquer son cerveau ?</h2>
+    <p>La bonne nouvelle est que le cerveau est plastique. Des études sur des périodes de "digital detox" de 3 à 4 semaines montrent des améliorations mesurables de la concentration et du bien-être émotionnel. Mais comme pour toute addiction, la rechute est facile.</p>
+    <p>La solution n'est pas binaire. Supprimer toutes ses applications n'est plus réaliste pour la majorité d'entre nous. Mais développer une <strong>hygiène numérique consciente</strong> — limiter le scroll passif, désactiver les notifications non essentielles, pratiquer des lectures longues — peut faire une vraie différence.</p>`
+  },
+  {
+    id: 5,
+    emoji: "🚀",
+    image : '',
+    grad: "grad-6",
+    views: "560k",
+    pinned: false,
+    tags: ["#Space", "#Science"],
+    title: "Mars 2030 : pourquoi Elon Musk a tort sur les délais (et peut-être raison sur le reste)",
+    date: "22 janvier 2025",
+    readTime: "9 min",
+    likes: "18k",
+    comments: "445",
+    body: `<p>Elon Musk parle d'envoyer des humains sur Mars d'ici 2029. Les experts de la NASA rigolent poliment. Qui a raison ? La réalité est, comme souvent, quelque part entre les deux.</p>
+    <h2>Les obstacles techniques sont réels</h2>
+    <p>Une mission humaine vers Mars implique de résoudre des problèmes qui n'ont jamais été résolus : la <strong>protection contre les radiations cosmiques</strong> pour un voyage de 7 mois, le maintien de la santé physique et mentale en microgravité prolongée, et la complexité logistique d'un atterrissage sur une planète sans infrastructure.</p>
+    <div class="highlight">« SpaceX est incroyablement innovant pour réduire les coûts de lancement. Mais les défis biologiques et médicaux d'un voyage vers Mars sont d'un ordre de complexité différent. »</div>
+    <p>La NASA estime qu'une mission humaine sur Mars nécessite encore 15 à 20 ans de développement dans les meilleures conditions. Pas parce que les ingénieurs manquent de talent, mais parce que certains problèmes — comme la dégénérescence osseuse en microgravité — sont fondamentalement difficiles.</p>
+    <h2>Pourquoi Musk a peut-être raison sur l'essentiel</h2>
+    <p>Ce que l'histoire a montré : les prophètes technologiques ont souvent tort sur les délais et raison sur la direction. L'aviation commerciale a mis 50 ans de plus que prévu. Internet a mis 20 ans de plus à devenir mobile. Mais ils sont arrivés.</p>
+    <p>La vraie question n'est pas "2029 ou 2045" mais "est-ce que l'humanité deviendra multiplanétaire ?" Et là, les arguments de Musk sur la nécessité de cette transition sont solides, même si son calendrier est fantaisiste.</p>`
+  },
+  {
+    id: 6,
+    emoji: "🎮",
+    image : '',
+    grad: "grad-7",
+    views: "4,2M",
+    pinned: false,
+    tags: ["#Gaming", "#Culture"],
+    title: "Les jeux vidéo sont devenus la forme d'art la plus importante du XXIe siècle",
+    date: "10 mars 2025",
+    readTime: "5 min",
+    likes: "112k",
+    comments: "5,6k",
+    body: `<p>En 2024, l'industrie du jeu vidéo a généré plus de revenus que le cinéma et la musique réunis. Mais l'argument économique est le moins intéressant. Ce qui est en train de se passer est une révolution culturelle que nous ne mesurons pas encore.</p>
+    <h2>Un médium unique dans l'histoire de l'art</h2>
+    <p>Chaque art a sa spécificité : la littérature pour l'introspection, le cinéma pour l'empathie narrative, la musique pour l'émotion pure. Le jeu vidéo apporte quelque chose d'inédit dans l'histoire humaine : <strong>l'agency</strong> — la capacité à agir dans un monde fictif et d'en être moralement responsable.</p>
+    <div class="highlight">« Quand vous choisissez de sauver ou de sacrifier un personnage dans The Last of Us, vous ne regardez pas un dilemme moral — vous le vivez. C'est philosophiquement différent de tout autre médium. »</div>
+    <p>Des jeux comme Disco Elysium, Nier: Automata ou Death Stranding explorent des questions philosophiques avec une sophistication que peu de romans contemporains égalent. Et ils le font en impliquant le joueur de manière active, pas passive.</p>
+    <h2>Le préjugé culturel qui persiste</h2>
+    <p>Pourtant, les jeux vidéo restent victimes d'un préjugé culturel tenace dans les milieux "sérieux". Les critiques littéraires ou cinématographiques se sentent rarement obligés de jouer aux jeux avant d'en parler.</p>
+    <p>Ce mépris est en train de changer — les écoles de cinéma enseignent désormais le game design, les musées d'art moderne exposent des jeux. Mais le retard culturel est là : la génération qui a grandi avec ces œuvres est en train d'accéder aux positions de pouvoir culturel. Le changement de paradigme est imminent.</p>`
+  },
+  {
+    id: 7,
+    emoji: "🧬",
+    image : '',
+    grad: "grad-9",
+    views: "743k",
+    pinned: false,
+    tags: ["#Bio", "#Santé"],
+    title: "CRISPR en 2025 : où en sommes-nous vraiment avec l'édition génomique ?",
+    date: "30 avril 2025",
+    readTime: "11 min",
+    likes: "29k",
+    comments: "892",
+    body: `<p>En 2012, Jennifer Doudna et Emmanuelle Charpentier publiaient leur article fondateur sur CRISPR-Cas9. Treize ans plus tard, cette technologie a tenu certaines de ses promesses et déçu sur d'autres fronts. État des lieux honnête.</p>
+    <h2>Les vrais succès thérapeutiques</h2>
+    <p>En 2023, la FDA a approuvé le premier traitement à base de CRISPR pour la <strong>drépanocytose</strong>, une maladie génétique sévère. Pour les patients traités, les résultats sont spectaculaires : plus de crises douloureuses, transfusions supprimées. C'est une révolution réelle pour une maladie qui touchait des millions de personnes.</p>
+    <div class="highlight">« Voir un patient drépanocytaire vivre sans douleur après 30 ans de souffrance, c'est le genre de moment qui vous rappelle pourquoi la science fondamentale a de l'importance. »</div>
+    <p>D'autres applications suivent rapidement : certains cancers du sang, des maladies héréditaires de la vision, potentiellement la maladie de Huntington. La thérapie génique entre dans une phase de maturité clinique.</p>
+    <h2>Les zones d'ombre éthiques</h2>
+    <p>La controverse He Jiankui — le scientifique chinois qui a créé des bébés génétiquement modifiés en 2018 — a mis en lumière les risques d'une technologie qui avance plus vite que la réglementation.</p>
+    <p>Les questions éthiques ne sont pas résolues : où mettre la limite entre traitement thérapeutique et enhancement génétique ? Qui aura accès à des thérapies qui coûtent encore plusieurs millions de dollars par patient ? Comment réguler une technologie utilisable dans n'importe quel laboratoire universitaire ? Ces questions attendent toujours des réponses institutionnelles solides.</p>`
+  },
+  {
+    id: 8,
+    emoji: "🏙️",
+    image : '',
+    grad: "grad-5",
+    views: "1,8M",
+    pinned: false,
+    tags: ["#Ville", "#Immobilier"],
+    title: "La crise du logement en France : pourquoi les solutions évidentes ne sont pas appliquées",
+    date: "8 avril 2025",
+    readTime: "8 min",
+    likes: "56k",
+    comments: "2,1k",
+    body: `<p>Le logement est en crise dans toutes les grandes métropoles françaises. Paris, Lyon, Bordeaux, Nantes : les prix ont doublé en 15 ans pendant que les salaires progressaient de 20%. Ce n'est pas une loi naturelle — c'est le résultat de choix politiques.</p>
+    <h2>Ce que l'économie dit clairement</h2>
+    <p>La cause principale est simple : <strong>l'offre ne suit pas la demande</strong>. La France construit environ 350 000 logements par an. Il en faudrait 500 000 selon tous les experts. Ce déficit s'accumule depuis des décennies.</p>
+    <div class="highlight">« Le problème du logement en France est moins une crise immobilière qu'une crise de la décision politique. Les outils existent. La volonté manque. »</div>
+    <p>Les solutions sont connues et documentées : densification urbaine, réforme des permis de construire, taxation des logements vacants, encadrement strict des meublés touristiques dans les zones tendues. Ces politiques ont fonctionné à Vienne, Amsterdam, Singapour.</p>
+    <h2>Pourquoi ça ne change pas</h2>
+    <p>La réponse est politiquement inconfortable : les propriétaires de logements — qui représentent 58% des Français — ont objectivement intérêt à ce que les prix restent élevés. Et ils votent davantage que les locataires.</p>
+    <p>Ce n'est pas un complot, c'est de la démocratie électorale classique : les politiques défendent les intérêts de leur électorat. Résoudre la crise du logement implique de léser des millions de propriétaires pour aider des millions de locataires. Aucun parti n'a vraiment envie de porter ce message.</p>`
+  },
+  {
+    id: 9,
+    emoji: "⚡",
+    image : '',
+    grad: "grad-8",
+    views: "2,9M",
+    pinned: false,
+    tags: ["#Énergie", "#Tech"],
+    title: "La fusion nucléaire : cette fois c'est vraiment pour bientôt (ou pas ?)",
+    date: "25 mars 2025",
+    readTime: "7 min",
+    likes: "67k",
+    comments: "1,8k",
+    body: `<p>La fusion nucléaire a une réputation : "l'énergie du futur, et elle le restera toujours." En décembre 2022, le laboratoire National Ignition Facility américain a produit plus d'énergie qu'il n'en a consommé pour la première fois de l'histoire. Est-ce que cette fois, c'est vraiment différent ?</p>
+    <h2>Pourquoi cette annonce est historique</h2>
+    <p>L'ignition — obtenir plus d'énergie en sortie qu'en entrée sur le combustible — est la barrière symbolique que la fusion cherchait à franchir depuis 70 ans. Le NIF l'a franchie. C'est une victoire scientifique incontestable.</p>
+    <div class="highlight">« C'est comme si on avait prouvé que les avions peuvent voler, mais qu'on n'avait pas encore construit d'aéroport. La physique est validée. L'ingénierie reste à faire. »</div>
+    <p>Le problème : l'expérience du NIF utilise des <strong>lasers gigantesques</strong> qui consomment 300 MJ pour livrer 2,05 MJ au combustible, lequel en produit 3,15 MJ. Le gain réel de l'installation entière est négatif d'un facteur 100. La route vers un réacteur commercial est encore très longue.</p>
+    <h2>Les startups qui changent la donne</h2>
+    <p>Ce qui est vraiment nouveau, c'est l'apparition d'un écosystème de startups privées — Commonwealth Fusion Systems, TAE Technologies, Helion — avec des approches différentes et des capitaux privés massifs. Jeff Bezos et Bill Gates investissent dans la fusion. Les délais annoncés sont ambitieux : 10 à 15 ans pour un premier réacteur pilote.</p>
+    <p>Le consensus scientifique reste prudent. Mais pour la première fois, il y a une pression économique et une compétition privée qui n'existait pas. Ça ne garantit pas le succès, mais ça change la dynamique.</p>`
+  }
+];
+
+function renderGrid() {
+  const grid = document.getElementById('video-grid');
+  grid.innerHTML = videos.map(v => `
+    <div class="video-card" onclick="openArticle(${v.id})">
+      <img class="card-thumb" src="${v.image}" alt="${v.title}">
+      ${v.pinned ? '<div class="card-pinned">ÉPINGLÉ</div>' : ''}
+      <div class="card-views-bottom">${v.views}</div>
+      <div class="card-overlay">
+        <div class="card-play"></div>
+        <div class="card-views">${v.views} vues</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openArticle(id) {
+  const v = videos.find(x => x.id === id);
+  if (!v) return;
+
+  document.getElementById('article-content').innerHTML = `
+    
+
+    <div class="article-tags">
+      ${v.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+    </div>
+
+    <h1 class="article-title">${v.title}</h1>
+
+    <div class="article-meta">
+      <div class="meta-avatar"> </div>
+      <div class="meta-text">
+        <div class="meta-author">@What_is_a_trend</div>
+        <div class="meta-date">${v.date} · ${v.readTime} de lecture</div>
+      </div>
+      <div class="meta-stats">
+        <span class="meta-stat">♥ ${v.likes}</span>
+        <span class="meta-stat">💬 ${v.comments}</span>
+      </div>
+    </div>
+
+    <div class="article-body">${v.body}</div>
+
+    <div class="share-row">
+      <button class="share-btn">📋 Copier le lien</button>
+      <button class="share-btn">💬 Partager</button>
+      <button class="share-btn primary">↗ Voir sur TikTok</button>
+    </div>
+  `;
+
+  document.getElementById('profile-page').classList.remove('active');
+  document.getElementById('article-page').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+  document.getElementById('article-page').classList.remove('active');
+  document.getElementById('profile-page').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderGrid();
+</script>
+</body>
+</html>
